@@ -1,0 +1,19 @@
+@* Default Web Document Viewer: Page Width zoom (DevExpress preview: -1 = page width, 0 = whole page). *@
+<script>
+(function () {
+    var c = window.ReportingViewerCustomization || (window.ReportingViewerCustomization = {});
+    var prev = c.onBeforeRender;
+    c.onBeforeRender = function (a, b) {
+        if (typeof prev === 'function')
+            prev(a, b);
+        var rp = (a && a.reportPreview) || (b && b.reportPreview);
+        if (!rp) return;
+        try {
+            if (typeof rp.zoom === 'function')
+                rp.zoom(-1);
+            else
+                rp.zoom = -1;
+        } catch (e) { }
+    };
+})();
+</script>

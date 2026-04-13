@@ -1,0 +1,8 @@
+.env
+*.user
+bin/
+obj/
+node_modules/
+
+# ASP.NET Data Protection keys (Docker/local)
+**/App_Data/dp-keys/*.xml

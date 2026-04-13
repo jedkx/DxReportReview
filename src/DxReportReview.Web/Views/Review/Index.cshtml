@@ -1,0 +1,205 @@
+@using DxReportReview.Web.Domain
+@model List<DxReportReview.Web.Models.ReviewListItemModel>
+@{
+    ViewData["Title"] = "Reviews";
+    var pending = (int)(ViewBag.PendingCount ?? 0);
+}
+
+<div id="appRoot" style="display:flex;height:calc(100vh - 48px);overflow:hidden;flex-direction:row;">
+
+    <main id="reviewMain" style="flex:1;display:flex;flex-direction:column;min-width:0;background:#111113;position:relative;order:1;">
+        <div id="reviewContent" style="flex:1;display:flex;min-height:0;">
+            <div id="welcomeState" style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#52525b;">
+                <p style="font-size:0.8125rem;color:#737373;margin:0;">Pick an item in the queue.</p>
+            </div>
+        </div>
+    </main>
+
+    <aside id="sidebar" style="width:300px;height:100%;background:#121214;border-left:1px solid #27272a;display:flex;flex-direction:column;flex-shrink:0;z-index:20;position:relative;order:2;">
+        <div style="padding:12px 14px;border-bottom:1px solid #27272a;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+            <button type="button" onclick="toggleSidebar(false)" title="Collapse queue" class="btn-icon" style="order:1;">
+                <i data-lucide="panel-right-close" class="w-4 h-4"></i>
+            </button>
+            <span style="font-size:0.8125rem;font-weight:600;color:#e5e7eb;display:flex;align-items:center;gap:6px;order:2;margin-left:auto;">
+                Queue
+                @if (pending > 0)
+                {
+                    <span style="font-size:0.625rem;background:rgba(234,179,8,0.14);color:#eab308;padding:1px 6px;border-radius:10px;font-weight:700;">@pending</span>
+                }
+            </span>
+        </div>
+
+        <div style="padding:10px 14px;border-bottom:1px solid #27272a;">
+            <div id="searchInputWrap" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:0 2px 0 8px;background:#18181b;border:1px solid #27272a;border-radius:6px;box-sizing:border-box;">
+                <span style="display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#6b7280;pointer-events:none;line-height:0;">
+                    <i data-lucide="search" class="w-3 h-3"></i>
+                </span>
+                <input type="text" id="searchInput" placeholder="Filter…"
+                       oninput="filterCards()"
+                       style="flex:1;min-width:0;padding:7px 10px 7px 0;background:transparent;border:0;font-size:0.75rem;color:#e5e7eb;outline:none;font-family:inherit;box-sizing:border-box;"
+                       onfocus="this.closest('div').style.borderColor='#3f3f46'" onblur="this.closest('div').style.borderColor='#27272a'" />
+            </div>
+            <select id="statusFilter" onchange="filterCards()"
+                    style="width:100%;background:#18181b;border:1px solid #27272a;color:#9ca3af;font-size:0.75rem;border-radius:6px;padding:6px 10px;outline:none;cursor:pointer;font-family:inherit;">
+                <option value="all">All statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+            </select>
+        </div>
+
+        <div id="sidebarList" style="flex:1;overflow-y:auto;">
+            @if (Model.Count == 0)
+            {
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#6b7280;padding:32px;">
+                    <i data-lucide="inbox" class="w-8 h-8" style="opacity:0.25;margin-bottom:10px;"></i>
+                    <p style="font-size:0.8125rem;margin:0;">Queue is empty.</p>
+                </div>
+            }
+            @foreach (var r in Model)
+            {
+                var statusColor = r.Status == ReviewStatus.Pending ? "#eab308"
+                                : r.Status == ReviewStatus.Approved ? "#22c55e" : "#ef4444";
+                var label = r.Status == ReviewStatus.Pending ? "Pending"
+                          : r.Status == ReviewStatus.Approved ? "Approved" : "Rejected";
+                <div class="rv-card"
+                     data-id="@r.Id" data-status="@r.Status"
+                     data-search="@r.ReportDisplayName.ToLower() @r.SubmitterDisplayName.ToLower()"
+                     onclick="selectReview('@r.Id', this)"
+                     style="padding:12px 14px;border-bottom:1px solid #27272a;cursor:pointer;border-right:3px solid @statusColor;transition:background 0.1s;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                        <span style="font-size:0.6875rem;font-weight:600;color:#6b7280;">#@r.Id</span>
+                        <span class="rv-status-badge" style="font-size:0.5625rem;font-weight:700;color:@statusColor;background:@(statusColor)14;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:0.04em;">@label</span>
+                    </div>
+                    <div style="font-size:0.8125rem;font-weight:600;color:#d1d5db;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@r.ReportDisplayName</div>
+                    @if (!string.IsNullOrWhiteSpace(r.Description))
+                    {
+                        <div style="font-size:0.6875rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px;">@r.Description</div>
+                    }
+                    <div style="font-size:0.6875rem;color:#52525b;display:flex;align-items:center;gap:4px;">
+                        <span style="color:#9ca3af;font-weight:500;">@r.SubmitterDisplayName</span>
+                        <span>&middot;</span>
+                        <span>@r.SubmittedAt.ToLocalTime().ToString("dd MMM yyyy")</span>
+                    </div>
+                    @if (r.HasConflict)
+                    {
+                        <div style="display:flex;align-items:center;gap:4px;margin-top:4px;font-size:0.6875rem;color:#eab308;">
+                            <i data-lucide="alert-triangle" class="w-3 h-3"></i>
+                            <span>Conflict</span>
+                        </div>
+                    }
+                </div>
+            }
+            <div id="noResultsMsg" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;color:#6b7280;">
+                <i data-lucide="search-x" class="w-6 h-6" style="opacity:0.25;margin-bottom:8px;"></i>
+                <p style="font-size:0.75rem;margin:0;">Nothing matches the filter.</p>
+            </div>
+        </div>
+    </aside>
+
+    <div id="sidebarStrip" style="display:none;width:40px;height:100%;background:#121214;border-left:1px solid #27272a;flex-shrink:0;flex-direction:column;align-items:center;padding-top:10px;order:3;">
+        <button type="button" onclick="toggleSidebar(true)" title="Show queue" class="btn-icon" style="padding:8px;border-radius:6px;">
+            <i data-lucide="panel-right-open" class="w-4 h-4"></i>
+        </button>
+        @if (pending > 0)
+        {
+            <span style="margin-top:6px;font-size:0.5625rem;font-weight:700;color:#eab308;background:rgba(234,179,8,0.14);width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%;">@pending</span>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    var cards = document.querySelectorAll('.rv-card[data-id]');
+    var content = document.getElementById('reviewContent');
+    var welcome = document.getElementById('welcomeState');
+    var activeId = null;
+
+    window.selectReview = function (id, el) {
+        if (String(id) === String(activeId)) return;
+        activeId = id;
+        cards.forEach(function (c) { c.style.background = 'transparent'; });
+        if (el) el.style.background = '#18181b';
+        if (welcome) welcome.style.display = 'none';
+
+        content.innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;"><div class="spinner" style="width:20px;height:20px;border-color:#3f3f46;border-top-color:#fff;"></div></div>';
+
+        fetch('/review/' + id + '/detail', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+            .then(function (html) {
+                content.innerHTML = '<div class="rv-animate-in" style="display:flex;flex:1;overflow:hidden;height:100%;min-height:0;">' + html + '</div>';
+                initDetail();
+                lucide.createIcons();
+            })
+            .catch(function () {
+                content.innerHTML =
+                    '<div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#6b7280;">' +
+                        '<i data-lucide="alert-circle" class="w-6 h-6" style="opacity:0.3;margin-bottom:8px;"></i>' +
+                        '<p style="font-size:0.8125rem;margin:0 0 12px;">Could not load details</p>' +
+                        '<button class="btn btn-ghost" style="font-size:0.75rem;" onclick="retryLoad()">Retry</button>' +
+                    '</div>';
+                lucide.createIcons();
+            });
+    };
+
+    window.retryLoad = function () {
+        if (activeId) {
+            var card = document.querySelector('.rv-card[data-id="' + activeId + '"]');
+            var prev = activeId;
+            activeId = null;
+            selectReview(prev, card);
+        }
+    };
+
+    window.refreshAfterAction = function (reviewId, newStatus) {
+        var card = document.querySelector('.rv-card[data-id="' + reviewId + '"]');
+        if (card) {
+            var colorMap = { Approved: '#22c55e', Rejected: '#ef4444', Pending: '#eab308' };
+            var color = colorMap[newStatus] || '#eab308';
+            card.style.borderRightColor = color;
+            card.setAttribute('data-status', newStatus);
+            var badge = card.querySelector('.rv-status-badge');
+            if (badge) { badge.textContent = newStatus; badge.style.color = color; badge.style.background = color + '14'; }
+        }
+        if (reviewId) {
+            var prevId = activeId;
+            activeId = null;
+            selectReview(reviewId, card);
+        }
+    };
+
+    window.toggleSidebar = function (open) {
+        document.getElementById('sidebar').style.display = open ? 'flex' : 'none';
+        document.getElementById('sidebarStrip').style.display = open ? 'none' : 'flex';
+    };
+
+    window.filterCards = function () {
+        var q = document.getElementById('searchInput').value.toLowerCase();
+        var s = document.getElementById('statusFilter').value;
+        var visible = 0;
+        cards.forEach(function (c) {
+            var ok = (!q || c.getAttribute('data-search').indexOf(q) !== -1) && (s === 'all' || c.getAttribute('data-status') === s);
+            c.style.display = ok ? '' : 'none';
+            if (ok) visible++;
+        });
+        var msg = document.getElementById('noResultsMsg');
+        if (msg) msg.style.display = visible === 0 && cards.length > 0 ? 'flex' : 'none';
+    };
+
+    function initDetail() {
+        initDetailPanel(content);
+    }
+
+    var hash = location.hash;
+    if (hash && hash.indexOf('#review-') === 0) {
+        var id = hash.replace('#review-', '');
+        var card = document.querySelector('.rv-card[data-id="' + id + '"]');
+        if (card) selectReview(id, card);
+    }
+})();
+</script>
+<style>
+    .rv-card:hover { background: #161616 !important; }
+</style>
+}

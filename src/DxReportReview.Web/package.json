@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "name": "dxreportreview-web",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "^4.6.2",
+    "jquery": "^3.7.1",
+    "knockout": "^3.5.1",
+    "ace-builds": "^1.32.9",
+    "devextreme-dist": "25.2.3",
+    "@devexpress/analytics-core": "25.2.3",
+    "devexpress-reporting": "25.2.3"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

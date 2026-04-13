@@ -1,0 +1,119 @@
+@keyframes rv-fadein {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.rv-animate-in { animation: rv-fadein 0.12s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+    .rv-animate-in { animation: none; }
+}
+
+.rv-tab-rail {
+    width: 128px;
+    flex-shrink: 0;
+    background: #121214;
+    border-right: 1px solid #27272a;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rv-tab-btn {
+    margin: 0 8px 0 0;
+    padding: 14px 12px;
+    min-height: 52px;
+    box-sizing: border-box;
+    text-align: left;
+    font-size: 0.9375rem;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #a1a1aa;
+    border: none;
+    border-left: 3px solid transparent;
+    border-radius: 0 8px 8px 0;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: none;
+    transition: color 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.rv-tab-btn:focus-visible {
+    outline: 2px solid #52525b;
+    outline-offset: 2px;
+}
+
+.rv-tab-btn:hover:not(.rv-tab-active) {
+    color: #d4d4d8;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.rv-tab-btn.rv-tab-active {
+    color: #ffffff;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0%, #1c1c1f 100%);
+    border-left-color: #ffffff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.rv-diff-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 6px 16px;
+    border-bottom: 1px solid #27272a;
+    background: #141414;
+    flex-shrink: 0;
+}
+
+.rv-diff-toolbar-text {
+    min-width: 0;
+    flex: 1;
+}
+
+.rv-diff-toolbar-title {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #e5e5e5;
+}
+
+.rv-diff-toolbar-sub {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: #737373;
+    line-height: 1.4;
+    max-width: 40rem;
+}
+
+.rv-diff-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: #737373;
+}
+
+.rv-diff-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rv-leg-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.rv-leg-dot--add { background: #22c55e; }
+.rv-leg-dot--mod { background: #3b82f6; }
+.rv-leg-dot--rem { background: #ef4444; }

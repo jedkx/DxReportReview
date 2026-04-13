@@ -1,0 +1,77 @@
+@using DxReportReview.Web.Infrastructure
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] — DxReportReview</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/thirdparty.bundle.css" />
+    <link rel="stylesheet" href="~/css/designer.part.bundle.css" />
+    <link rel="stylesheet" href="~/css/ace/ace.bundle.css" />
+    <script src="https://unpkg.com/lucide@0.577.0"></script>
+    <script src="~/js/thirdparty.bundle.js"></script>
+    <script src="~/js/designer.part.bundle.js"></script>
+    @await Html.PartialAsync("_WebDocumentViewerDefaults")
+</head>
+@{
+    var fullWidth = ViewData["FullWidth"] as bool? == true;
+    var currentUser = User.Identity?.Name ?? "";
+    var isAlice = currentUser == "Alice";
+    var otherUser = isAlice ? "bob" : "alice";
+    var otherLabel = isAlice ? "Bob" : "Alice";
+    var currentRole = isAlice ? "Designer" : "Approver";
+    var currentInitial = currentUser.Length > 0 ? currentUser[0].ToString() : "?";
+}
+<body style="margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;min-height:100vh;background:#18181b;color:#f3f4f6;">
+    <header style="height:56px;border-bottom:1px solid #3f3f46;background:#1e1e22;display:flex;align-items:center;flex-shrink:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 20px;max-width:1400px;margin:0 auto;">
+            <a href="/" style="font-weight:600;color:#fff;display:flex;align-items:center;font-size:0.875rem;gap:8px;text-decoration:none;">
+                <i data-lucide="git-pull-request" class="w-4 h-4" style="color:#71717a;"></i>
+                DxReportReview
+            </a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <nav style="display:flex;align-items:center;gap:6px;">
+                    @if (User.IsInRole(Roles.Designer))
+                    {
+                        <a href="@Url.Action("Designer", "Report", new { id = 1 })" class="nav-link-lg" style="color:#e5e7eb;">Designer</a>
+                        <a href="@Url.Action("Viewer", "Report", new { id = 1 })" class="nav-link-lg">Viewer</a>
+                    }
+                    <a href="@Url.Action("Index", "Review")" class="nav-link-lg" style="display:inline-flex;align-items:center;">Reviews @await Component.InvokeAsync("PendingBadge")</a>
+
+                    <span style="width:1px;height:24px;background:#3f3f46;margin:0 8px;"></span>
+
+                    <div style="display:flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:8px;background:#27272a;border:1px solid #3f3f46;">
+                        <span style="width:28px;height:28px;border-radius:50%;background:@(isAlice ? "#fff" : "#52525b");color:@(isAlice ? "#000" : "#fff");display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;">@currentInitial</span>
+                        <span style="font-size:0.8125rem;font-weight:600;color:#e5e7eb;">@currentUser</span>
+                        <span style="font-size:0.625rem;font-weight:600;color:#71717a;background:#18181b;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.05em;">@currentRole</span>
+                    </div>
+
+                    <form asp-controller="Auth" asp-action="Switch" method="post" style="display:inline;margin:0;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="username" value="@otherUser" />
+                        <button type="submit" class="btn-switch" style="padding:6px 14px;border-radius:8px;">
+                            <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
+                            Switch to @otherLabel
+                        </button>
+                    </form>
+
+                    <form asp-controller="Auth" asp-action="Logout" method="post" style="display:inline;margin:0;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-icon" style="display:inline-flex;align-items:center;gap:4px;padding:6px 10px;font-size:0.75rem;border-radius:6px;" aria-label="Logout">
+                            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                            Logout
+                        </button>
+                    </form>
+                </nav>
+            }
+        </div>
+    </header>
+    <main style="@(fullWidth ? "width:100%;padding:0;" : "max-width:1400px;margin:0 auto;padding:20px;")">
+        @RenderBody()
+    </main>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

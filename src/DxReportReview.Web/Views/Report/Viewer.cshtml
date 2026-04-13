@@ -1,0 +1,26 @@
+@model DxReportReview.Web.Models.ReportViewerPageModel
+@{
+    var useFrame = ViewData["UseFrameLayout"] as bool? == true;
+    Layout = useFrame ? "_FrameLayout" : "_Layout";
+    ViewData["FullWidth"] = !useFrame;
+    ViewData["Title"] = "Viewer";
+}
+@if (useFrame)
+{
+    <div style="height:100vh;width:100%;">
+        @(Html.DevExpress().WebDocumentViewer("documentViewer")
+            .Height("100%")
+            .Bind(Model.ReportKey))
+    </div>
+}
+else
+{
+    <div style="display:flex;flex-direction:column;height:calc(100vh - 56px);width:100%;">
+        <p style="margin:0;flex-shrink:0;padding:0.35rem 1rem;font-size:0.6875rem;color:#737373;border-bottom:1px solid #27272a;background:#18181b;">Read-only preview of the stored report layout.</p>
+        <div style="flex:1;min-height:0;width:100%;">
+            @(Html.DevExpress().WebDocumentViewer("documentViewer")
+                .Height("100%")
+                .Bind(Model.ReportKey))
+        </div>
+    </div>
+}

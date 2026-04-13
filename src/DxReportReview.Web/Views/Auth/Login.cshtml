@@ -1,0 +1,87 @@
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;">
+    <div style="width:100%;max-width:28rem;">
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white text-black" style="margin-bottom:1rem;">
+                <i data-lucide="git-pull-request" class="w-8 h-8"></i>
+            </div>
+            <h1 style="font-size:1.5rem;font-weight:700;color:#fff;margin:0;">DxReportReview</h1>
+            <p style="color:#6b7280;margin:0.25rem 0 0;font-size:0.875rem;">Report Review System</p>
+        </div>
+
+        <div class="bg-surface-1 rounded-xl border border-line" style="overflow:hidden;">
+            <div style="padding:2rem;">
+                <h2 style="font-size:1.125rem;font-weight:600;color:#fff;margin:0 0 0.25rem;">Welcome back</h2>
+                <p style="font-size:0.875rem;color:#6b7280;margin:0 0 1.5rem;">Sign in to continue to your workspace.</p>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="rounded-lg border border-red-500/30 bg-red-500/10" style="padding:0.75rem;font-size:0.875rem;color:#f87171;margin-bottom:1rem;display:flex;align-items:flex-start;gap:0.5rem;">
+                        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0" style="margin-top:2px;"></i>
+                        <div>@Html.ValidationSummary(false)</div>
+                    </div>
+                }
+
+                <form id="loginForm" method="post" asp-action="Login">
+                    @Html.AntiForgeryToken()
+                    <div style="margin-bottom:1.25rem;">
+                        <label style="display:block;font-size:0.875rem;font-weight:500;color:#9ca3af;margin-bottom:0.375rem;">Username</label>
+                        <input name="username" id="usernameInput" type="text" autocomplete="username"
+                               class="w-full rounded-lg border border-line bg-surface-2"
+                               style="padding:0.625rem 1rem;font-size:0.875rem;color:#fff;outline:none;font-family:inherit;"
+                               placeholder="Enter your username" />
+                    </div>
+                    <button id="loginBtn" type="submit"
+                            class="w-full rounded-lg bg-white"
+                            style="padding:0.625rem 1rem;font-size:0.875rem;font-weight:500;color:#000;border:0;cursor:pointer;font-family:inherit;">
+                        Continue
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-surface-2 border-t border-line" style="padding:1.25rem 2rem;">
+                <p style="font-size:0.75rem;font-weight:600;color:#6b7280;text-align:center;margin:0 0 0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Quick Access</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                    <button onclick="quickLogin('alice')"
+                            class="bg-surface-1 border border-line rounded-lg hover:bg-surface-3"
+                            style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;cursor:pointer;text-align:left;font-family:inherit;color:inherit;">
+                        <span style="width:2.25rem;height:2.25rem;border-radius:9999px;background:#fff;color:#000;display:flex;align-items:center;justify-content:center;font-size:0.875rem;font-weight:700;flex-shrink:0;">A</span>
+                        <div>
+                            <div style="font-size:0.875rem;font-weight:600;color:#e5e7eb;">Alice</div>
+                            <div style="font-size:0.75rem;color:#6b7280;">Designer</div>
+                        </div>
+                    </button>
+                    <button onclick="quickLogin('bob')"
+                            class="bg-surface-1 border border-line rounded-lg hover:bg-surface-3"
+                            style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;cursor:pointer;text-align:left;font-family:inherit;color:inherit;">
+                        <span style="width:2.25rem;height:2.25rem;border-radius:9999px;background:#52525b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.875rem;font-weight:700;flex-shrink:0;">B</span>
+                        <div>
+                            <div style="font-size:0.875rem;font-weight:600;color:#e5e7eb;">Bob</div>
+                            <div style="font-size:0.75rem;color:#6b7280;">Approver</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <p style="text-align:center;font-size:0.75rem;color:#52525b;margin:1.5rem 0 0;">No password required in this demo.</p>
+    </div>
+</div>
+
+<script>
+    var submitting = false;
+    document.getElementById('loginForm').addEventListener('submit', function () {
+        if (submitting) return;
+        submitting = true;
+        document.getElementById('loginBtn').disabled = true;
+        document.getElementById('loginBtn').style.opacity = '0.6';
+    });
+    function quickLogin(username) {
+        if (submitting) return;
+        document.getElementById('usernameInput').value = username;
+        document.getElementById('loginForm').submit();
+    }
+</script>

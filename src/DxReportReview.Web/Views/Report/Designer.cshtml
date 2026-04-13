@@ -1,0 +1,130 @@
+@model DxReportReview.Web.Models.ReportDesignerPageModel
+@{
+    ViewData["Title"] = "Designer";
+    ViewData["FullWidth"] = true;
+}
+
+<div id="rrSubmitModal" style="display:none;position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);">
+    <div style="width:100%;max-width:28rem;border-radius:0.75rem;background:#1e1e22;border:1px solid #3f3f46;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);overflow:hidden;">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid #3f3f46;background:#27272a;">
+            <h2 style="font-size:1.125rem;font-weight:700;color:#fff;margin:0;display:flex;align-items:center;gap:0.5rem;">
+                <i data-lucide="git-pull-request" class="w-5 h-5" style="color:#9ca3af;"></i>
+                Submit for Review
+            </h2>
+        </div>
+        <div style="padding:1.5rem;">
+            <p style="font-size:0.8125rem;color:#71717a;margin:0 0 1rem;line-height:1.5;">Confirm who should review and what you changed. The layout is only written when you click <strong style="color:#d4d4d8;">Continue Save</strong>. <strong style="color:#a3a3a3;">Save As</strong> sends a <em>new</em> report for review instead of updating the one you opened.</p>
+            <div>
+                <label style="display:block;font-size:0.875rem;font-weight:600;color:#d1d5db;margin-bottom:0.375rem;">Approver</label>
+                <select id="rrApprover"
+                        style="width:100%;border-radius:0.5rem;border:1px solid #3f3f46;background:#27272a;padding:0.625rem 1rem;font-size:0.875rem;color:#fff;outline:none;cursor:pointer;font-family:inherit;margin-bottom:1rem;">
+                    <option value="2">Bob (Approver)</option>
+                </select>
+                <label style="display:block;font-size:0.875rem;font-weight:600;color:#d1d5db;margin-bottom:0.375rem;">Description</label>
+                <textarea id="rrDescription" rows="3"
+                          style="width:100%;border-radius:0.5rem;border:1px solid #3f3f46;background:#27272a;padding:0.625rem 1rem;font-size:0.875rem;color:#fff;outline:none;resize:none;font-family:inherit;"
+                          placeholder="Summarize your changes for the approver (e.g. added totals row, fixed logo alignment)."></textarea>
+            </div>
+        </div>
+        <div style="padding:12px 24px;background:#27272a;border-top:1px solid #3f3f46;display:flex;justify-content:flex-end;gap:10px;">
+            <button type="button" id="rrCancelBtn" class="btn btn-ghost" style="padding:8px 18px;font-size:0.8125rem;border-radius:8px;">
+                Cancel
+            </button>
+            <button type="button" id="rrConfirmBtn" class="btn btn-primary" style="padding:8px 18px;font-size:0.8125rem;border-radius:8px;">
+                Continue Save
+            </button>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+<script>
+    var rrPendingSave = null;
+    var rrIsNewReport = false;
+
+    function rrCustomizeMenuActions(s, e) {
+        var save = e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.Save);
+        if (save) {
+            var origSave = save.clickAction;
+            save.clickAction = function () {
+                var ctx = this, args = arguments;
+                rrIsNewReport = false;
+                rrPendingSave = function () { origSave.apply(ctx, args); };
+                document.getElementById('rrSubmitModal').style.display = 'flex';
+            };
+        }
+
+        var saveAs = e.GetById(DevExpress.Reporting.Designer.Actions.ActionId.SaveAs);
+        if (saveAs) {
+            var origSaveAs = saveAs.clickAction;
+            saveAs.clickAction = function () {
+                var ctx = this, args = arguments;
+                rrIsNewReport = true;
+                rrPendingSave = function () { origSaveAs.apply(ctx, args); };
+                document.getElementById('rrSubmitModal').style.display = 'flex';
+            };
+        }
+    }
+</script>
+<div style="display:flex;flex-direction:column;height:calc(100vh - 56px);width:100%;min-height:0;">
+    <div style="flex-shrink:0;padding:0.65rem 1rem 0.65rem;border-bottom:1px solid #27272a;background:linear-gradient(180deg, rgba(39,39,42,0.35) 0%, transparent 100%);">
+        <p style="margin:0 0 0.4rem;font-size:0.8125rem;font-weight:600;color:#e4e4e7;line-height:1.4;">
+            Make your changes, then save
+        </p>
+        <p style="margin:0 0 0.5rem;font-size:0.75rem;color:#a1a1aa;line-height:1.5;max-width:48rem;">
+            Update the report below however you need (layout, text, fields). When you are finished, use the toolbar to persist it and send it for approval.
+        </p>
+        <div style="font-size:0.75rem;color:#a1a1aa;line-height:1.5;padding:0.5rem 0.65rem;border-radius:0.5rem;border:1px solid #3f3f46;background:#1e1e22;max-width:48rem;">
+            <strong style="color:#93c5fd;">Save</strong> — update <em>this</em> report (goes to the approver after you add a short note).
+            <span style="color:#52525b;"> · </span>
+            <strong style="color:#93c5fd;">Save As</strong> — submit a <em>new</em> report for review.
+            Either way you choose an approver and describe what changed; it then appears under <strong style="color:#e4e4e7;">Reviews</strong>.
+        </div>
+    </div>
+    <div style="flex:1;min-height:0;width:100%;padding:0 1rem 0.65rem;box-sizing:border-box;">
+        @(Html.DevExpress().ReportDesigner("reportDesigner")
+            .Height("100%")
+            .Bind(Model.ReportKey)
+            .ClientSideEvents(configure => configure.CustomizeMenuActions("rrCustomizeMenuActions")))
+    </div>
+</div>
+<script>
+    document.getElementById('rrCancelBtn').addEventListener('click', function () {
+        document.getElementById('rrSubmitModal').style.display = 'none';
+        rrPendingSave = null;
+    });
+
+    document.getElementById('rrConfirmBtn').addEventListener('click', async function () {
+        var btn = this;
+        var originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Saving\u2026';
+        try {
+            var approverId = parseInt(document.getElementById('rrApprover').value, 10);
+            var description = document.getElementById('rrDescription').value || '';
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            var res = await fetch('@Url.Action("SetApprover", "Report")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify({ approverId: approverId, description: description, isNewReport: rrIsNewReport })
+            });
+            if (!res.ok) {
+                var d = await res.json().catch(function () { return {}; });
+                btn.textContent = d.error || 'Failed';
+                btn.style.color = '#ef4444';
+                btn.disabled = false;
+                setTimeout(function () { btn.textContent = originalText; btn.style.color = ''; }, 2000);
+                return;
+            }
+            document.getElementById('rrSubmitModal').style.display = 'none';
+            var run = rrPendingSave;
+            rrPendingSave = null;
+            if (run) run();
+        } catch (e) {
+            btn.textContent = 'Network error';
+            btn.style.color = '#ef4444';
+            btn.disabled = false;
+            setTimeout(function () { btn.textContent = originalText; btn.style.color = ''; }, 2000);
+        }
+    });
+</script>

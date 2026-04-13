@@ -1,0 +1,12 @@
+@model DxReportReview.Web.Models.ReviewDetailModel
+@{ ViewData["Title"] = "Review #" + Model.Id; }
+
+<div style="display:flex;height:calc(100vh - 48px);overflow:hidden;">
+    <div class="rv-animate-in" style="display:flex;flex:1;overflow:hidden;height:100%;">
+        <partial name="_Detail" model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+<script>initDetailPanel(document);</script>
+}

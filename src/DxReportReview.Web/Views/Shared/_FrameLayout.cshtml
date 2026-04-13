@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] — DxReportReview</title>
+    <link rel="stylesheet" href="~/css/thirdparty.bundle.css" />
+    <link rel="stylesheet" href="~/css/designer.part.bundle.css" />
+    <link rel="stylesheet" href="~/css/ace/ace.bundle.css" />
+    <script src="~/js/thirdparty.bundle.js"></script>
+    <script src="~/js/designer.part.bundle.js"></script>
+    @await Html.PartialAsync("_WebDocumentViewerDefaults")
+    <style>
+        html, body { margin: 0; height: 100%; overflow: hidden; }
+    </style>
+</head>
+<body>
+    @RenderBody()
+</body>
+</html>
